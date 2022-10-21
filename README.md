@@ -1,9 +1,3 @@
-# Fabric Example Mod
+# Better Anvil
 
-## Setup
-
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+Replaces the vanilla anvil formula with something very different, meant to reduce extreme price increases long-term and give more uses to underutilized mechanics like the enchantability stat.

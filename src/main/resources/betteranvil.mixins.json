@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.mandl.betteranvil.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "AnvilMixin",
+    "ASHAccessors",
+    "FSHAccessors",
+    "SHAccessors"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
