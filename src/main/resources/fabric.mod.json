@@ -9,6 +9,10 @@
     "MandL27"
   ],
 
+  "contact": {
+    "sources": "https://github.com/MandL27/BetterAnvilMod"
+  },
+
   "license": "CC0-1.0",
   "icon": "assets/betteranvil/icon.png",
 
