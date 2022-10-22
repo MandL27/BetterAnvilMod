@@ -4,10 +4,7 @@
   "package": "net.mandl.betteranvil.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AnvilMixin",
-    "ASHAccessors",
-    "FSHAccessors",
-    "SHAccessors"
+    "AnvilMixin"
   ],
   "client": [
   ],

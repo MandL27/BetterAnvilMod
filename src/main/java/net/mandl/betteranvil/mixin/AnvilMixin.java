@@ -5,48 +5,69 @@ import java.util.Map;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantment.Rarity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
 import net.minecraft.screen.AnvilScreenHandler;
+import net.minecraft.screen.ForgingScreenHandler;
+import net.minecraft.screen.Property;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.LiteralText;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(AnvilScreenHandler.class)
-public class AnvilMixin {
-	@Inject(method = "updateResult()V", at = @At("TAIL"), cancellable = true)
-	public void updateResultNew(CallbackInfo info) {
+public abstract class AnvilMixin extends ForgingScreenHandler {
+	@Shadow
+	public Property levelCost;
+	@Shadow
+	public int repairItemUsage;
+	@Shadow
+	public String newItemName;
+
+	public AnvilMixin(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
+		super(type, syncId, playerInventory, context);
+	}
+
+	@Overwrite
+	public void updateResult() {
 		// get some vars
 		int repairCost = 0, enchantCost = 0, renameCost = 0, units = 0;
 		// read the input stacks
-		ItemStack left = ((FSHAccessors)this).getInput().getStack(0);
-		ItemStack right = ((FSHAccessors)this).getInput().getStack(1);
-		((ASHAccessors)this).getLevelCost().set(0);
-		((FSHAccessors)this).getOutput().setStack(0, ItemStack.EMPTY);
+		ItemStack left = input.getStack(0);
+		ItemStack right = input.getStack(1);
+		levelCost.set(0);
+		output.setStack(0, ItemStack.EMPTY);
 		// can't operate on an empty left input, so return
 		// (empty right input is valid for renames)
 		if (left.isEmpty())	{
-			info.cancel();
+			return;
 		}
 		// dupe left so we can alter it non-destructively
 		ItemStack left2 = left.copy();
 		// renaming
 		// remove a name if a blank string is input
-		if (StringUtils.isBlank(((ASHAccessors)this).getNewItemName())) {
+		if (StringUtils.isBlank(newItemName)) {
 			if (left.hasCustomName()) {
 				renameCost = 1;
 				left2.removeCustomName();
 			}
 		// otherwise assign the new name if it's changed
-		} else if (!((ASHAccessors)this).getNewItemName().equals(left.getName().getString())) {
+		} else if (!newItemName.equals(left.getName().getString())) {
 			renameCost = 1;
-			left2.setCustomName(new LiteralText(((ASHAccessors)this).getNewItemName()));
+			left2.setCustomName(new LiteralText(newItemName));
 		}
 		if (!right.isEmpty()) {
 			// repair case 1: unit repair
@@ -57,6 +78,7 @@ public class AnvilMixin {
 					repairCost++;
 					unit = Math.min(left2.getDamage(), left2.getMaxDamage() / 4);
 				}
+				repairItemUsage = units;
 			// repair case 2: fusion repair
 			} else if (left2.isDamageable() && left2.isOf(right.getItem()) && left2.getDamage() > 0) {
 				left2.setDamage(Math.max(0, left2.getDamage() - (right.getMaxDamage() - right.getDamage())));
@@ -81,7 +103,7 @@ public class AnvilMixin {
 					// skip null enchantments in case that ends up here somehow
 					if (r == null) continue;
 					// skip enchantments that aren't compatible with the target item, unless we're in creative mode
-					if (!(r.isAcceptableItem(left) || left.isOf(Items.ENCHANTED_BOOK) || ((FSHAccessors)this).getPlayer().getAbilities().creativeMode)) continue;
+					if (!(r.isAcceptableItem(left) || left.isOf(Items.ENCHANTED_BOOK) || player.getAbilities().creativeMode)) continue;
 					// skip mutually exclusive enchantments
 					boolean skipped = false;
 					for (Enchantment l : leftEnc.keySet()) {
@@ -110,14 +132,14 @@ public class AnvilMixin {
 			}
 			// combine costs
 			int totalCost = repairCost + enchantCost + renameCost;
-			((ASHAccessors)this).getLevelCost().set(totalCost);
+			levelCost.set(totalCost);
 			if (totalCost <= 0) {
 				left2 = ItemStack.EMPTY;
 			} else {
 				left2.setRepairCost(Math.min(left2.getRepairCost() + units, 32));
 			}
-			((FSHAccessors)this).getOutput().setStack(0, left2);
-			((SHAccessors)this).invokeSendContentUpdates();
+			output.setStack(0, left2);
+			sendContentUpdates();
 		}
 	}
 
