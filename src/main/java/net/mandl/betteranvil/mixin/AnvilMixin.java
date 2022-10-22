@@ -5,9 +5,7 @@ import java.util.Map;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantment.Rarity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,13 +20,12 @@ import net.minecraft.text.LiteralText;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(AnvilScreenHandler.class)
+@Mixin(value = AnvilScreenHandler.class, priority = 500)
 public abstract class AnvilMixin extends ForgingScreenHandler {
 	@Shadow
 	public Property levelCost;
@@ -41,8 +38,8 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 		super(type, syncId, playerInventory, context);
 	}
 
-	@Overwrite
-	public void updateResult() {
+	@Inject(at = @At("RETURN"), method = "updateResult()V", cancellable = true)
+	public void updateResultNew(CallbackInfo info) {
 		// get some vars
 		int repairCost = 0, enchantCost = 0, renameCost = 0, units = 0;
 		// read the input stacks
@@ -53,7 +50,7 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 		// can't operate on an empty left input, so return
 		// (empty right input is valid for renames)
 		if (left.isEmpty())	{
-			return;
+			info.cancel();
 		}
 		// dupe left so we can alter it non-destructively
 		ItemStack left2 = left.copy();
