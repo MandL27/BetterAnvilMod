@@ -127,17 +127,17 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 				}
 				EnchantmentHelper.set(leftEnc, left2);
 			}
-			// combine costs
-			int totalCost = repairCost + enchantCost + renameCost;
-			levelCost.set(totalCost);
-			if (totalCost <= 0) {
-				left2 = ItemStack.EMPTY;
-			} else {
-				left2.setRepairCost(Math.min(left2.getRepairCost() + units, 32));
-			}
-			output.setStack(0, left2);
-			sendContentUpdates();
 		}
+		// combine costs
+		int totalCost = repairCost + enchantCost + renameCost;
+		levelCost.set(totalCost);
+		if (totalCost <= 0) {
+			left2 = ItemStack.EMPTY;
+		} else {
+			left2.setRepairCost(Math.min(left2.getRepairCost() + units, 32));
+		}
+		output.setStack(0, left2);
+		sendContentUpdates();
 	}
 
 	private int triangle(int v) {
