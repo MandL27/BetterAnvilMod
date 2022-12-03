@@ -104,7 +104,7 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 					// skip mutually exclusive enchantments
 					boolean skipped = false;
 					for (Enchantment l : leftEnc.keySet()) {
-							if (l != r && !l.canCombine(r)) {
+							if ((l != r && !l.canCombine(r))/* || (l == r && leftEnc.getOrDefault(l, 0) >= l.getMaxLevel())*/) {
 								skipped = true;
 								break;
 							}
@@ -114,7 +114,7 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 					// calc the new level
 					int leftLvl = leftEnc.getOrDefault(r, 0);
 					int rightLvl = rightEnc.get(r);
-					int finalLvl = leftLvl == rightLvl ? leftLvl + 1 : Math.max(Math.max(leftLvl, rightLvl), r.getMaxLevel());
+					int finalLvl = leftLvl == rightLvl ? Math.min(leftLvl + 1, r.getMaxLevel()) : Math.max(leftLvl, rightLvl);
 					int deltaLvl = finalLvl - leftLvl;
 					// increasing enchantment level costs the delta level
 					enchantCost += deltaLvl * Math.round(enchantmentRarity(r.getRarity()) * 10d / (double)enchantability);
