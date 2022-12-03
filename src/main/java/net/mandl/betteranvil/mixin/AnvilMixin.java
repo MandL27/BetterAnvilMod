@@ -114,7 +114,7 @@ public abstract class AnvilMixin extends ForgingScreenHandler {
 					// calc the new level
 					int leftLvl = leftEnc.getOrDefault(r, 0);
 					int rightLvl = rightEnc.get(r);
-					int finalLvl = leftLvl == rightLvl ? leftLvl + 1 : Math.max(leftLvl, rightLvl);
+					int finalLvl = leftLvl == rightLvl ? leftLvl + 1 : Math.max(Math.max(leftLvl, rightLvl), r.getMaxLevel());
 					int deltaLvl = finalLvl - leftLvl;
 					// increasing enchantment level costs the delta level
 					enchantCost += deltaLvl * Math.round(enchantmentRarity(r.getRarity()) * 10d / (double)enchantability);
